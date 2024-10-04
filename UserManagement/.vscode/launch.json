@@ -1,0 +1,14 @@
+{
+      "configurations": [
+            {
+                  "type": "java",
+                  "name": "Spring Boot-UserManagementApplication<UserManagement>",
+                  "request": "launch",
+                  "cwd": "${workspaceFolder}",
+                  "mainClass": "br.com.braga.UserManagement.UserManagementApplication",
+                  "projectName": "UserManagement",
+                  "args": "",
+                  "envFile": "${workspaceFolder}/.env"
+            }
+      ]
+}
