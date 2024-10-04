@@ -11,10 +11,10 @@ import { InputText } from 'primereact/inputtext';
 import { Toast } from 'primereact/toast';
 import { Toolbar } from 'primereact/toolbar';
 import { classNames } from 'primereact/utils';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 
-/* @todo Used 'as any' for types here. Will fix in next version due to onSelectionChange event type issue. */
-const Crud = () => {
+
+const User = () => {
     let emptyUser: Projeto.User = {
         id: 0,
         name: '',
@@ -28,12 +28,12 @@ const Crud = () => {
     const [deleteUserDialog, setDeleteUserDialog] = useState(false);
     const [deleteUsersDialog, setDeleteUsersDialog] = useState(false);
     const [user, setUser] = useState<Projeto.User>(emptyUser);
-    const [selectedUsers, setSelectedUsers] = useState(null);
+    const [selectedUsers, setSelectedUsers] = useState<Projeto.User[]>([]);;
     const [submitted, setSubmitted] = useState(false);
     const [globalFilter, setGlobalFilter] = useState('');
     const toast = useRef<Toast>(null);
     const dt = useRef<DataTable<any>>(null);
-    const userService = new UserService();
+    const userService = useMemo(() => new UserService(), []);
 
     useEffect(() => {
         if (users.length == 0) {
@@ -44,7 +44,7 @@ const Crud = () => {
                 console.log(error)
             })
         }
-    }, [users]);
+    }, [userService, users]);
 
     const openNew = () => {
         setUser(emptyUser);
@@ -74,14 +74,14 @@ const Crud = () => {
                 setUserDialog(false);
                 setUser(emptyUser);
                 setUsers([]);
-                toast.current.show({
+                toast.current?.show({
                     severity: 'info',
                     summary: 'Sucesso',
                     detail: 'Usuário cadastrado com sucesso!'
                 })
             }).catch((error) => {
                 console.log(error.data.message);
-                toast.current.show({
+                toast.current?.show({
                     severity: 'error',
                     summary: 'Sucesso',
                     detail: 'Error ao cadastrar' + error.data.message
@@ -93,14 +93,14 @@ const Crud = () => {
                 setUserDialog(false);
                 setUser(emptyUser);
                 setUsers([]);
-                toast.current.show({
+                toast.current?.show({
                     severity: 'info',
                     summary: 'Sucesso',
                     detail: 'Usuário alterado com sucesso!'
                 })
             }).catch((error) => {
                 console.log(error.data.message);
-                toast.current.show({
+                toast.current?.show({
                     severity: 'error',
                     summary: 'Sucesso',
                     detail: 'Error ao alterar' + error.data.message
@@ -120,57 +120,31 @@ const Crud = () => {
     };
 
     const deleteUser = () => {
-        userService.delete(user.id)
-        .then((response) => {
-            setUser(emptyUser);
-            setDeleteUserDialog(false);
-            setUsers([]);
-            toast.current?.show({
-                    severity: 'success',
-                    summary: 'Sucesso!',
-                    detail: 'Usuario deletado com sucesso!',
-                    life: 3000
-                });
-        }).catch((error) => {
-            toast.current?.show({
-                    severity: 'error',
-                    summary: 'Erro!',
-                    detail: 'Erro ao deletar o usuario!',
-                    life: 3000
-                });
-        });
-        // let _products = (products as any)?.filter((val: any) => val.id !== product.id);
-        // setProducts(_products);
-        // setDeleteProductDialog(false);
-        // setProduct(emptyProduct);
-        // toast.current?.show({
-        //     severity: 'success',
-        //     summary: 'Successful',
-        //     detail: 'Product Deleted',
-        //     life: 3000
-        // });
+        if(user.id) {
+
+            userService.delete(user.id)
+            .then((response) => {
+                setUser(emptyUser);
+                setDeleteUserDialog(false);
+                setUsers([]);
+                toast.current?.show({
+                        severity: 'success',
+                        summary: 'Sucesso!',
+                        detail: 'Usuario deletado com sucesso!',
+                        life: 3000
+                    });
+            }).catch((error) => {
+                toast.current?.show({
+                        severity: 'error',
+                        summary: 'Erro!',
+                        detail: 'Erro ao deletar o usuario!',
+                        life: 3000
+                    });
+            });
+        }
     };
 
-    // const findIndexById = (id: string) => {
-    //     let index = -1;
-    //     for (let i = 0; i < (products as any)?.length; i++) {
-    //         if ((products as any)[i].id === id) {
-    //             index = i;
-    //             break;
-    //         }
-    //     }
-
-    //     return index;
-    // };
-
-    // const createId = () => {
-    //     let id = '';
-    //     let chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    //     for (let i = 0; i < 5; i++) {
-    //         id += chars.charAt(Math.floor(Math.random() * chars.length));
-    //     }
-    //     return id;
-    // };
+   
 
     const exportCSV = () => {
         dt.current?.exportCSV();
@@ -181,23 +155,30 @@ const Crud = () => {
     };
 
     const deleteSelectedUsers = () => {
-        // let _products = (products as any)?.filter((val: any) => !(selectedProducts as any)?.includes(val));
-        // setProducts(_products);
-        // setDeleteProductsDialog(false);
-        // setSelectedProducts(null);
-        // toast.current?.show({
-        //     severity: 'success',
-        //     summary: 'Successful',
-        //     detail: 'Products Deleted',
-        //     life: 3000
-        // });
-    };
-
-    // const onCategoryChange = (e: RadioButtonChangeEvent) => {
-    //     let _product = { ...product };
-    //     _product['category'] = e.value;
-    //     setProduct(_product);
-    // };
+        Promise.all (selectedUsers.map(async (_user) => {
+            if(_user.id) {
+                await userService.delete(_user.id)
+            }
+            
+        })).then((response) => {
+            setUsers([]);
+            setSelectedUsers([])
+            setDeleteUsersDialog(false);
+            toast.current?.show({
+                severity: 'success',
+                summary: 'Sucesso!',
+                detail: 'Usuarios deletados com sucesso!',
+                life: 3000
+            });
+        }).catch((error) => {
+            toast.current?.show({
+                severity: 'error',
+                summary: 'Erro!',
+                detail: 'Erro ao deletar o usuarios!',
+                life: 3000
+            });
+        });
+    }
 
     const onInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, name: string) => {
         const val = (e.target && e.target.value) || '';
@@ -206,14 +187,6 @@ const Crud = () => {
 
         setUser(_user);
     };
-
-    // const onInputNumberChange = (e: InputNumberValueChangeEvent, name: string) => {
-    //     const val = e.value || 0;
-    //     let _product = { ...product };
-    //     _product[`${name}`] = val;
-
-    //     setProduct(_product);
-    // };
 
     const leftToolbarTemplate = () => {
         return (
@@ -271,50 +244,6 @@ const Crud = () => {
         );
     };
 
-    // const imageBodyTemplate = (rowData: Demo.Product) => {
-    //     return (
-    //         <>
-    //             <span className="p-column-title">Image</span>
-    //             <img src={`/demo/images/product/${rowData.image}`} alt={rowData.image} className="shadow-2" width="100" />
-    //         </>
-    //     );
-    // };
-
-    // const priceBodyTemplate = (rowData: Demo.Product) => {
-    //     return (
-    //         <>
-    //             <span className="p-column-title">Price</span>
-    //             {formatCurrency(rowData.price as number)}
-    //         </>
-    //     );
-    // };
-
-    // const categoryBodyTemplate = (rowData: Demo.Product) => {
-    //     return (
-    //         <>
-    //             <span className="p-column-title">Category</span>
-    //             {rowData.category}
-    //         </>
-    //     );
-    // };
-
-    // const ratingBodyTemplate = (rowData: Demo.Product) => {
-    //     return (
-    //         <>
-    //             <span className="p-column-title">Reviews</span>
-    //             <Rating value={rowData.rating} readOnly cancel={false} />
-    //         </>
-    //     );
-    // };
-
-    // const statusBodyTemplate = (rowData: Demo.Product) => {
-    //     return (
-    //         <>
-    //             <span className="p-column-title">Status</span>
-    //             <span className={`product-badge status-${rowData.inventoryStatus?.toLowerCase()}`}>{rowData.inventoryStatus}</span>
-    //         </>
-    //     );
-    // };
 
     const actionBodyTemplate = (rowData: Projeto.User) => {
         return (
@@ -472,4 +401,4 @@ const Crud = () => {
     );
 };
 
-export default Crud;
+export default User;
