@@ -1,5 +1,6 @@
 package br.com.braga.UserManagement.entity;
 
+import br.com.braga.UserManagement.dto.ProfileDTO;
 import org.springframework.web.bind.annotation.CrossOrigin;
 
 import jakarta.persistence.Column;
@@ -18,9 +19,8 @@ import lombok.Setter;
 @CrossOrigin
 @Getter
 @Setter
-@NoArgsConstructor
 @EqualsAndHashCode(of = "id")
-public class Profile {
+public class ProfileEntity {
       
       @Id
       @GeneratedValue(strategy= GenerationType.AUTO)
@@ -28,4 +28,11 @@ public class Profile {
 
       @Column(nullable= false)
       private String description;
+
+      public ProfileEntity(ProfileDTO profile) {
+      }
+
+      public ProfileEntity() {
+
+      }
 }
