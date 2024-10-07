@@ -1,0 +1,11 @@
+br\com\braga\UserManagement\dto\UserDTO.class
+br\com\braga\UserManagement\controller\UserController.class
+br\com\braga\UserManagement\service\UserResourceService.class
+br\com\braga\UserManagement\repository\IUserResourceRepository.class
+br\com\braga\UserManagement\UserManagementApplication.class
+br\com\braga\UserManagement\controller\UserResourceController.class
+br\com\braga\UserManagement\service\UserService.class
+br\com\braga\UserManagement\dto\UserResourceDTO.class
+br\com\braga\UserManagement\entity\UserEntity.class
+br\com\braga\UserManagement\repository\IUserRepository.class
+br\com\braga\UserManagement\entity\UserResourceEntity.class
